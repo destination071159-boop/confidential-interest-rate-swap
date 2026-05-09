@@ -107,16 +107,6 @@ export const PROTOCOL_ABI = [
 
 export const SETTLEMENT_ENGINE_ABI = [
   {
-    name: 'deposit',
-    type: 'function',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'encAmount',  type: 'bytes32' },
-      { name: 'inputProof', type: 'bytes'   },
-    ],
-    outputs: [],
-  },
-  {
     name: 'withdraw',
     type: 'function',
     stateMutability: 'nonpayable',
@@ -326,5 +316,17 @@ export const TOKEN_ABI = [
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
     outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'confidentialTransferAndCall',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to',         type: 'address' },
+      { name: 'encAmount',  type: 'bytes32' },
+      { name: 'inputProof', type: 'bytes'   },
+      { name: 'data',       type: 'bytes'   },
+    ],
+    outputs: [],
   },
 ] as const;

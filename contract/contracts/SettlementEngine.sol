@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {FHE, euint64, ebool, externalEuint64} from "@fhevm/solidity/lib/FHE.sol";
 import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 import {IERC7984} from "@openzeppelin/confidential-contracts/interfaces/IERC7984.sol";
+import {IERC7984Receiver} from "@openzeppelin/confidential-contracts/interfaces/IERC7984Receiver.sol";
 
 /// @title SettlementEngine — Encrypted collateral vault for IRS settlement payments
 ///
@@ -30,7 +31,7 @@ import {IERC7984} from "@openzeppelin/confidential-contracts/interfaces/IERC7984
 ///   3. Internally stored as amount × BPS_SCALE.
 ///   4. Withdraw takes an encrypted micro-USDC request; deducts BPS_SCALE × amount internally;
 ///      transfers the un-scaled token amount back.
-contract SettlementEngine is ZamaEthereumConfig {
+contract SettlementEngine is ZamaEthereumConfig, IERC7984Receiver {
   // ── Constants ─────────────────────────────────────────────────────────
 
   uint64 public constant BPS_SCALE = 10_000;
@@ -126,30 +127,46 @@ contract SettlementEngine is ZamaEthereumConfig {
 
   // ── User-facing collateral management ─────────────────────────────────
 
-  /// @notice Deposit ERC-7984 tokens into the settlement vault.
-  ///         Caller must have previously called token.setOperator(thisAddr, expiry).
+  /// @notice ERC-7984 receiver callback — called by the token after a
+  ///         confidentialTransferAndCall.
+  ///         User calls token.confidentialTransferAndCall(settlementEngine, handle, proof, "")
+  ///         directly; the token verifies the proof then calls this function
+  ///         with the already-decoded euint64 — no contractAddress ambiguity.
   ///
-  ///         Encrypted input must be created off-chain as:
-  ///           fhevm.createEncryptedInput(tokenAddr, settlementEngineAddr)
+  ///         The amount is scaled by BPS_SCALE before storage so that
+  ///         settlement arithmetic (notional × netRateBps) is unit-consistent
+  ///         without any FHE division.
   ///
-  /// @param encAmount   Off-chain encrypted micro-USDC amount.
-  /// @param inputProof  Proof covering encAmount.
-  function deposit(externalEuint64 encAmount, bytes calldata inputProof) external {
-    // Confidential pull-transfer; gives this contract permanent ACL on `transferred`.
-    euint64 transferred = token.confidentialTransferFrom(
-      msg.sender, address(this), encAmount, inputProof);
+  /// @param from    The sender of the confidential transfer (user).
+  /// @param amount  Already-verified encrypted micro-USDC amount.
+  function onConfidentialTransferReceived(
+    address /* operator */,
+    address from,
+    euint64 amount,
+    bytes calldata /* data */
+  ) external override returns (ebool) {
+    require(msg.sender == address(token), "SettlementEngine: only token");
 
     // Scale up by BPS_SCALE so settlement arithmetic is unit-consistent.
-    euint64 scaledAmount = FHE.mul(transferred, FHE.asEuint64(BPS_SCALE));
-    _collateral[msg.sender] = FHE.add(_collateral[msg.sender], scaledAmount);
+    euint64 scaledAmount = FHE.mul(amount, FHE.asEuint64(BPS_SCALE));
 
-    FHE.allowThis(_collateral[msg.sender]);
-    FHE.allow(_collateral[msg.sender], msg.sender);
+    if (FHE.isInitialized(_collateral[from])) {
+      _collateral[from] = FHE.add(_collateral[from], scaledAmount);
+    } else {
+      _collateral[from] = scaledAmount;
+    }
 
+    FHE.allowThis(_collateral[from]);
+    FHE.allow(_collateral[from], from);
     // Allow the user to decrypt the deposited amount from the event.
-    FHE.allow(transferred, msg.sender);
+    FHE.allow(amount, from);
 
-    emit Deposit(msg.sender, transferred);
+    emit Deposit(from, amount);
+
+    // TOKEN needs transient ACL access to the returned ebool for its FHE.select refund logic.
+    ebool success = FHE.asEbool(true);
+    FHE.allowTransient(success, msg.sender);
+    return success;
   }
 
   /// @notice Withdraw tokens from the vault.

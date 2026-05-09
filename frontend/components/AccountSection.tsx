@@ -38,17 +38,17 @@ export function AccountSection() {
     try {
       const enc = await encrypt.mutateAsync({
         values: [{ value: BigInt(depositAmt), type: 'euint64' }],
-        contractAddress: SETTLEMENT_ENGINE_ADDRESS,
+        contractAddress: TOKEN_ADDRESS,
         userAddress: address,
       });
       const encAmount  = bytesToHex(enc.handles[0]!);
       const inputProof = bytesToHex(enc.inputProof);
       setStatus('Waiting for wallet confirmation…');
       const hash = await writeContractAsync({
-        address: SETTLEMENT_ENGINE_ADDRESS,
-        abi: SETTLEMENT_ENGINE_ABI,
-        functionName: 'deposit',
-        args: [encAmount, inputProof],
+        address: TOKEN_ADDRESS,
+        abi: TOKEN_ABI,
+        functionName: 'confidentialTransferAndCall',
+        args: [SETTLEMENT_ENGINE_ADDRESS, encAmount, inputProof, '0x'],
         gas: 15_000_000n,
       });
       setTxHash(hash);
