@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { TOKEN_ADDRESS, TOKEN_ABI } from '@/lib/contracts';
 
@@ -10,7 +10,7 @@ const PRESETS = [
   { label: '100 USDC',  value: 100_000_000 },
 ];
 
-export function MintPanel() {
+export function MintPanel({ onMinted }: { onMinted?: () => void }) {
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
 
@@ -19,7 +19,18 @@ export function MintPanel() {
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
   const [busy,   setBusy]   = useState(false);
 
-  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
+  const { isLoading: confirming } = useWaitForTransactionReceipt({
+    hash: txHash,
+    onReplaced: () => onMinted?.(),
+  });
+
+  useEffect(() => {
+    if (txHash && !confirming && status === 'Minting…') {
+      setStatus('Minted! Tokens will appear above.');
+      onMinted?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirming, txHash]);
 
   const usdcDisplay = amount ? (Number(amount) / 1_000_000).toFixed(2) : '0.00';
 

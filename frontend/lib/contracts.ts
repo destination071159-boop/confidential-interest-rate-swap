@@ -315,7 +315,7 @@ export const TOKEN_ABI = [
     type: 'function',
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
-    outputs: [{ name: '', type: 'uint256' }],
+    outputs: [{ name: '', type: 'bytes32' }],
   },
   {
     name: 'confidentialTransferAndCall',

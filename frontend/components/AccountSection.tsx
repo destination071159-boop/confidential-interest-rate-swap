@@ -22,6 +22,15 @@ export function AccountSection() {
 
   const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
 
+  // cUSDC wallet balance
+  const { data: tokenBalance, refetch: refetchBalance } = useReadContract({
+    address: TOKEN_ADDRESS,
+    abi: TOKEN_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: isConnected && !!address },
+  });
+
   // collateral handle for decryption
   const { data: collateralHandle, refetch } = useReadContract({
     address: SETTLEMENT_ENGINE_ADDRESS,
@@ -54,6 +63,7 @@ export function AccountSection() {
       setTxHash(hash);
       setStatus('Deposit submitted!');
       await refetch();
+      await refetchBalance();
     } catch (err: any) {
       setStatus(`Error: ${err.shortMessage ?? err.message}`);
     } finally {
@@ -107,6 +117,14 @@ export function AccountSection() {
               <span className="label">Network</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sepolia</span>
             </div>
+            <div className="info-row">
+              <span className="label">cUSDC Balance</span>
+              <span className="mono" style={{ fontSize: 11, color: 'var(--text)' }}>
+                {tokenBalance != null
+                  ? `${(Number(tokenBalance) / 1_000_000).toFixed(2)} cUSDC`
+                  : '—'}
+              </span>
+            </div>
           </>
         ) : (
           <p style={{ fontSize: 12, color: 'var(--text-dim)' }}>No wallet connected.</p>
@@ -114,7 +132,7 @@ export function AccountSection() {
       </div>
 
       {/* Mint test tokens */}
-      <MintPanel />
+      <MintPanel onMinted={() => refetchBalance()} />
 
       {/* Collateral balance */}
       <div className="glass" style={{ padding: 20 }}>
