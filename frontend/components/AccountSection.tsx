@@ -6,6 +6,7 @@ import { useEncrypt } from '@zama-fhe/react-sdk';
 import { bytesToHex } from 'viem';
 import { SETTLEMENT_ENGINE_ADDRESS, SETTLEMENT_ENGINE_ABI, TOKEN_ADDRESS, TOKEN_ABI } from '@/lib/contracts';
 import { DecryptCollateral } from './DecryptCollateral';
+import { DecryptTokenBalance } from './DecryptTokenBalance';
 import { MintPanel } from './MintPanel';
 import { shorten } from '@/lib/utils';
 
@@ -22,11 +23,11 @@ export function AccountSection() {
 
   const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
 
-  // cUSDC wallet balance
-  const { data: tokenBalance, refetch: refetchBalance } = useReadContract({
+  // cUSDC wallet balance handle (ERC-7984 — encrypted)
+  const { data: tokenBalanceHandle, refetch: refetchBalance } = useReadContract({
     address: TOKEN_ADDRESS,
     abi: TOKEN_ABI,
-    functionName: 'balanceOf',
+    functionName: 'confidentialBalanceOf',
     args: address ? [address] : undefined,
     query: { enabled: isConnected && !!address },
   });
@@ -119,10 +120,10 @@ export function AccountSection() {
             </div>
             <div className="info-row">
               <span className="label">cUSDC Balance</span>
-              <span className="mono" style={{ fontSize: 11, color: 'var(--text)' }}>
-                {tokenBalance != null
-                  ? `${(Number(tokenBalance) / 1_000_000).toFixed(2)} cUSDC`
-                  : '—'}
+              <span className="mono">
+                {tokenBalanceHandle
+                  ? <DecryptTokenBalance handle={tokenBalanceHandle as `0x${string}`} />
+                  : <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>—</span>}
               </span>
             </div>
           </>

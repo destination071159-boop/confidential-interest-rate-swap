@@ -63,7 +63,7 @@ export function DecryptTokenBalance({ handle }: Props) {
     return <span style={{ ...BOX, color: 'var(--text-dim)', fontSize: 11 }}>Signing…</span>;
   }
 
-  if (isDecrypting) {
+  if (clicked && isDecrypting) {
     return <span style={{ ...BOX, color: 'var(--text-dim)', fontSize: 11 }}>Decrypting…</span>;
   }
 

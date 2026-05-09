@@ -311,7 +311,7 @@ export const TOKEN_ABI = [
     outputs: [],
   },
   {
-    name: 'balanceOf',
+    name: 'confidentialBalanceOf',
     type: 'function',
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
@@ -322,10 +322,10 @@ export const TOKEN_ABI = [
     type: 'function',
     stateMutability: 'nonpayable',
     inputs: [
-      { name: 'to',         type: 'address' },
-      { name: 'encAmount',  type: 'bytes32' },
-      { name: 'inputProof', type: 'bytes'   },
-      { name: 'data',       type: 'bytes'   },
+      { name: 'to',              type: 'address' },
+      { name: 'encryptedAmount', type: 'bytes32' },
+      { name: 'inputProof',      type: 'bytes'   },
+      { name: 'data',            type: 'bytes'   },
     ],
     outputs: [],
   },
