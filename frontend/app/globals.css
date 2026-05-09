@@ -283,3 +283,7 @@ tbody td { padding: 8px 8px; color: var(--text-muted); vertical-align: middle; }
   border-radius: 100px;
   padding: 3px 8px;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}

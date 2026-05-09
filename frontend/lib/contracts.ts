@@ -306,7 +306,7 @@ export const TOKEN_ABI = [
     stateMutability: 'nonpayable',
     inputs: [
       { name: 'to',     type: 'address' },
-      { name: 'amount', type: 'uint256' },
+      { name: 'amount', type: 'uint64'  },
     ],
     outputs: [],
   },

@@ -6,6 +6,7 @@ import { useEncrypt } from '@zama-fhe/react-sdk';
 import { bytesToHex } from 'viem';
 import { SETTLEMENT_ENGINE_ADDRESS, SETTLEMENT_ENGINE_ABI, TOKEN_ADDRESS, TOKEN_ABI } from '@/lib/contracts';
 import { DecryptCollateral } from './DecryptCollateral';
+import { MintPanel } from './MintPanel';
 import { shorten } from '@/lib/utils';
 
 export function AccountSection() {
@@ -111,6 +112,9 @@ export function AccountSection() {
           <p style={{ fontSize: 12, color: 'var(--text-dim)' }}>No wallet connected.</p>
         )}
       </div>
+
+      {/* Mint test tokens */}
+      <MintPanel />
 
       {/* Collateral balance */}
       <div className="glass" style={{ padding: 20 }}>
