@@ -86,7 +86,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // ── 7. SwaptionVault ───────────────────────────────────────────────────
   const swaptionVault = await deploy("SwaptionVault", {
     from: deployer,
-    args: [swapManager.address, rateOracle.address],
+    args: [swapManager.address, rateOracle.address, swapPool.address],
     log: true,
     autoMine: true,
   });
