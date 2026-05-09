@@ -46,7 +46,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     log: true,
     autoMine: true,
-    contract: "contracts/InterestRateSwaps/RateOracle.sol:RateOracle",
   });
 
   // ── 3. SwapManager ───────────────────────────────────────────────────────
@@ -54,7 +53,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     log: true,
     autoMine: true,
-    contract: "contracts/InterestRateSwaps/SwapManager.sol:SwapManager",
   });
 
   // ── 4. SettlementEngine ──────────────────────────────────────────────────
@@ -63,7 +61,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [token.address],
     log: true,
     autoMine: true,
-    contract: "contracts/InterestRateSwaps/SettlementEngine.sol:SettlementEngine",
   });
 
   // ── 5. SwapPool ──────────────────────────────────────────────────────────
@@ -72,7 +69,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [swapManager.address, rateOracle.address, settlementEngine.address],
     log: true,
     autoMine: true,
-    contract: "contracts/InterestRateSwaps/SwapPool.sol:SwapPool",
   });
 
   // ── 6. InterestRateSwapProtocol ──────────────────────────────────────────
@@ -86,10 +82,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ],
     log: true,
     autoMine: true,
-    contract:
-      "contracts/InterestRateSwaps/InterestRateSwapProtocol.sol:InterestRateSwapProtocol",
   });
-
+  // ── 7. SwaptionVault ───────────────────────────────────────────────────
+  const swaptionVault = await deploy("SwaptionVault", {
+    from: deployer,
+    args: [swapManager.address, rateOracle.address],
+    log: true,
+    autoMine: true,
+  });
   // ── Authorisation wiring ─────────────────────────────────────────────────
   console.log("\nWiring authorisations...");
 
@@ -117,6 +117,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     swapPool.address,
   );
 
+  // SwaptionVault → SwapManager
+  await execute(
+    "SwapManager",
+    { from: deployer, log: true },
+    "authorise",
+    swaptionVault.address,
+  );
+
   // ── Summary ──────────────────────────────────────────────────────────────
   console.log("\n── Deployment summary ──────────────────────────────────");
   console.log(`MockConfidentialToken  : ${token.address}`);
@@ -125,6 +133,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log(`SettlementEngine       : ${settlementEngine.address}`);
   console.log(`SwapPool               : ${swapPool.address}`);
   console.log(`InterestRateSwapProtocol: ${protocol.address}`);
+  console.log(`SwaptionVault          : ${swaptionVault.address}`);
   console.log("────────────────────────────────────────────────────────");
 
   console.log("\nPrivacy guarantees after deployment:");
