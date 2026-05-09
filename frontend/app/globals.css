@@ -2,11 +2,11 @@
 
 :root {
   --bg:           #000000;
-  --bg-surface:   #0A0A0A;
-  --bg-elevated:  #111111;
-  --bg-input:     #050505;
-  --border:       #1A1A1A;
-  --border-strong:#2A2A2A;
+  --bg-surface:   #161616;
+  --bg-elevated:  #1E1E1E;
+  --bg-input:     #0E0E0E;
+  --border:       #2A2A2A;
+  --border-strong:#3A3A3A;
   --text:         #FFFFFF;
   --text-muted:   #AAAAAA;
   --text-dim:     #777777;

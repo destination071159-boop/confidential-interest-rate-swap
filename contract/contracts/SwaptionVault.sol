@@ -43,13 +43,13 @@ contract SwaptionVault is ZamaEthereumConfig {
 
   struct Swaption {
     uint256 swaptionId;
-    address writer;       // grants the option (fixed-rate obligation seller)
-    address buyer;        // holds the option (may exercise)
-    euint64 strikeRate;   // encrypted fixed rate in bps per 30-day period
-    euint64 notional;     // encrypted notional in micro-USDC
-    uint256 expiry;       // unix timestamp — option lapses after this
+    address writer; // grants the option (fixed-rate obligation seller)
+    address buyer; // holds the option (may exercise)
+    euint64 strikeRate; // encrypted fixed rate in bps per 30-day period
+    euint64 notional; // encrypted notional in micro-USDC
+    uint256 expiry; // unix timestamp — option lapses after this
     uint256 swapTermDays; // if exercised, resulting swap runs for this many days
-    bool    exercised;    // true once exerciseSwaption() or lapseSwaption() is called
+    bool exercised; // true once exerciseSwaption() or lapseSwaption() is called
   }
 
   // ── State ─────────────────────────────────────────────────────────────
@@ -58,8 +58,8 @@ contract SwaptionVault is ZamaEthereumConfig {
   uint256 public nextSwaptionId = 1;
 
   SwapManager public immutable swapManager;
-  RateOracle  public immutable rateOracle;
-  address     public immutable swapPool;
+  RateOracle public immutable rateOracle;
+  address public immutable swapPool;
 
   // ── Events ────────────────────────────────────────────────────────────
 
@@ -80,8 +80,8 @@ contract SwaptionVault is ZamaEthereumConfig {
 
   constructor(address _swapManager, address _rateOracle, address _swapPool) {
     swapManager = SwapManager(_swapManager);
-    rateOracle  = RateOracle(_rateOracle);
-    swapPool    = _swapPool;
+    rateOracle = RateOracle(_rateOracle);
+    swapPool = _swapPool;
   }
 
   // ── Write ─────────────────────────────────────────────────────────────
@@ -114,8 +114,8 @@ contract SwaptionVault is ZamaEthereumConfig {
     require(expiry > block.timestamp, "Expiry in past");
     require(swapTermDays > 0, "Invalid swap term");
 
-    euint64 strikeRate = FHE.fromExternal(encStrike,   inputProof);
-    euint64 notional   = FHE.fromExternal(encNotional, inputProof);
+    euint64 strikeRate = FHE.fromExternal(encStrike, inputProof);
+    euint64 notional = FHE.fromExternal(encNotional, inputProof);
 
     // Persist ACL so vault can use both handles across transactions.
     FHE.allowThis(strikeRate);
@@ -128,14 +128,14 @@ contract SwaptionVault is ZamaEthereumConfig {
 
     swaptionId = nextSwaptionId++;
     _swaptions[swaptionId] = Swaption({
-      swaptionId:   swaptionId,
-      writer:       msg.sender,
-      buyer:        buyer,
-      strikeRate:   strikeRate,
-      notional:     notional,
-      expiry:       expiry,
+      swaptionId: swaptionId,
+      writer: msg.sender,
+      buyer: buyer,
+      strikeRate: strikeRate,
+      notional: notional,
+      expiry: expiry,
       swapTermDays: swapTermDays,
-      exercised:    false
+      exercised: false
     });
 
     emit SwaptionWritten(swaptionId, msg.sender, buyer, expiry);
@@ -157,7 +157,9 @@ contract SwaptionVault is ZamaEthereumConfig {
   ///
   /// @param swaptionId  Swaption to exercise.
   /// @return swapId     ID of the newly created IRS position.
-  function exerciseSwaption(uint256 swaptionId) external returns (uint256 swapId) {
+  function exerciseSwaption(
+    uint256 swaptionId
+  ) external returns (uint256 swapId) {
     Swaption storage s = _swaptions[swaptionId];
     require(msg.sender == s.buyer, "Not buyer");
     require(!s.exercised, "Already exercised");
@@ -166,11 +168,15 @@ contract SwaptionVault is ZamaEthereumConfig {
     s.exercised = true;
 
     uint256 floatingRate = rateOracle.getCurrentRate();
-    euint64 encFloating  = FHE.asEuint64(uint64(floatingRate));
+    euint64 encFloating = FHE.asEuint64(uint64(floatingRate));
 
     // ITM when floating > strike (buyer benefits by paying lower fixed).
-    ebool   inTheMoney        = FHE.gt(encFloating, s.strikeRate);
-    euint64 effectiveNotional = FHE.select(inTheMoney, s.notional, FHE.asEuint64(0));
+    ebool inTheMoney = FHE.gt(encFloating, s.strikeRate);
+    euint64 effectiveNotional = FHE.select(
+      inTheMoney,
+      s.notional,
+      FHE.asEuint64(0)
+    );
 
     // Grant ACL to all downstream contracts and both counterparties.
     FHE.allowThis(effectiveNotional);
@@ -209,10 +215,27 @@ contract SwaptionVault is ZamaEthereumConfig {
 
   // ── View helpers ──────────────────────────────────────────────────────
 
-  function getSwaptionBuyer(uint256 swaptionId)   external view returns (address) { return _swaptions[swaptionId].buyer; }
-  function getSwaptionWriter(uint256 swaptionId)  external view returns (address) { return _swaptions[swaptionId].writer; }
-  function isExercised(uint256 swaptionId)        external view returns (bool)    { return _swaptions[swaptionId].exercised; }
-  function getSwaptionExpiry(uint256 swaptionId)  external view returns (uint256) { return _swaptions[swaptionId].expiry; }
+  function getSwaptionBuyer(
+    uint256 swaptionId
+  ) external view returns (address) {
+    return _swaptions[swaptionId].buyer;
+  }
+
+  function getSwaptionWriter(
+    uint256 swaptionId
+  ) external view returns (address) {
+    return _swaptions[swaptionId].writer;
+  }
+
+  function isExercised(uint256 swaptionId) external view returns (bool) {
+    return _swaptions[swaptionId].exercised;
+  }
+
+  function getSwaptionExpiry(
+    uint256 swaptionId
+  ) external view returns (uint256) {
+    return _swaptions[swaptionId].expiry;
+  }
 
   /// @notice Encrypted strike rate handle — only ACL-permitted parties can decrypt.
   function getStrikeRate(uint256 swaptionId) external view returns (euint64) {
