@@ -26,8 +26,8 @@ export function AccountSection() {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Wallet card */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
+      {/* Combined account + collateral card */}
       <div className="glass" style={{ padding: 20 }}>
         <p className="panel-title">Account</p>
         {isConnected && address ? (
@@ -48,24 +48,23 @@ export function AccountSection() {
                   : <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>—</span>}
               </span>
             </div>
+
+            {/* Divider */}
+            <div style={{ borderTop: '1px solid var(--border)', margin: '16px 0' }} />
+
+            {/* Vault collateral inline */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span className="label" style={{ fontSize: 12 }}>Vault Collateral</span>
+              <span className="enc-badge">🔒 FHE</span>
+            </div>
+            {collateralHandle != null ? (
+              <DecryptCollateral handle={collateralHandle as `0x${string}`} />
+            ) : (
+              <p style={{ fontSize: 12, color: 'var(--text-dim)' }}>Loading…</p>
+            )}
           </>
         ) : (
           <p style={{ fontSize: 12, color: 'var(--text-dim)' }}>No wallet connected.</p>
-        )}
-      </div>
-
-      {/* Vault collateral balance */}
-      <div className="glass" style={{ padding: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-          <p className="panel-title" style={{ marginBottom: 0 }}>Vault Collateral</p>
-          <span className="enc-badge">🔒 FHE</span>
-        </div>
-        {isConnected && collateralHandle != null ? (
-          <DecryptCollateral handle={collateralHandle as `0x${string}`} />
-        ) : (
-          <p style={{ fontSize: 12, color: 'var(--text-dim)' }}>
-            {isConnected ? 'Loading…' : 'Connect wallet to view.'}
-          </p>
         )}
       </div>
 

@@ -22,6 +22,7 @@ export function CollateralSidebar({ onDeposited, onWithdrawn }: Props) {
   const encrypt = useEncrypt();
   const { writeContractAsync } = useWriteContract();
 
+  const [mode,        setMode]        = useState<'deposit' | 'withdraw'>('deposit');
   const [depositAmt,  setDepositAmt]  = useState('');
   const [withdrawAmt, setWithdrawAmt] = useState('');
   const [status,      setStatus]      = useState('');
@@ -92,126 +93,124 @@ export function CollateralSidebar({ onDeposited, onWithdrawn }: Props) {
     }
   }
 
+  const amt    = mode === 'deposit' ? depositAmt : withdrawAmt;
+  const setAmt = mode === 'deposit' ? setDepositAmt : setWithdrawAmt;
+  const usdcDisplay = amt ? (Number(amt) / 1_000_000).toFixed(2) : '';
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-
-      {/* Deposit */}
-      <div className="glass" style={{ padding: 20 }}>
-        <p className="panel-title">Deposit Collateral</p>
-        <form onSubmit={handleDeposit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Presets */}
-          <div style={{ display: 'flex', gap: 6 }}>
-            {PRESETS.map(p => (
-              <button
-                key={p.value}
-                type="button"
-                onClick={() => setDepositAmt(String(p.value))}
-                style={{
-                  flex: 1,
-                  padding: '6px 0',
-                  fontSize: 11,
-                  background: depositAmt === String(p.value) ? 'rgba(255,255,255,0.08)' : 'transparent',
-                  border: `1px solid ${depositAmt === String(p.value) ? 'var(--border-strong)' : 'var(--border)'}`,
-                  borderRadius: 6,
-                  color: depositAmt === String(p.value) ? 'var(--text)' : 'var(--text-muted)',
-                  cursor: 'pointer',
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-          <div>
-            <label className="label" style={{ display: 'block', marginBottom: 6 }}>
-              Amount (micro-USDC) <span className="enc-badge" style={{ marginLeft: 4 }}>🔒</span>
-            </label>
-            <input
-              className="input"
-              type="number"
-              placeholder="1000000 = 1 USDC"
-              value={depositAmt}
-              onChange={e => setDepositAmt(e.target.value)}
-              required min="1"
-            />
-            {depositAmt && <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>= {(Number(depositAmt) / 1_000_000).toFixed(2)} USDC</p>}
-          </div>
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={busy || confirming || !isConnected}
-            style={{ width: '100%', justifyContent: 'center' }}
-          >
-            {busy || confirming ? 'Processing…' : `Deposit${depositAmt ? ` ${(Number(depositAmt) / 1_000_000).toFixed(2)} USDC` : ''}`}
-          </button>
-        </form>
+    <div className="glass" style={{ padding: 28, display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <p className="panel-title" style={{ marginBottom: 0 }}>Collateral</p>
+        <span className="enc-badge">🔒 encrypted</span>
       </div>
 
-      {/* Withdraw */}
-      <div className="glass" style={{ padding: 20 }}>
-        <p className="panel-title">Withdraw Collateral</p>
-        <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Presets */}
-          <div style={{ display: 'flex', gap: 6 }}>
-            {PRESETS.map(p => (
-              <button
-                key={p.value}
-                type="button"
-                onClick={() => setWithdrawAmt(String(p.value))}
-                style={{
-                  flex: 1,
-                  padding: '6px 0',
-                  fontSize: 11,
-                  background: withdrawAmt === String(p.value) ? 'rgba(255,255,255,0.08)' : 'transparent',
-                  border: `1px solid ${withdrawAmt === String(p.value) ? 'var(--border-strong)' : 'var(--border)'}`,
-                  borderRadius: 6,
-                  color: withdrawAmt === String(p.value) ? 'var(--text)' : 'var(--text-muted)',
-                  cursor: 'pointer',
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-          <div>
-            <label className="label" style={{ display: 'block', marginBottom: 6 }}>
-              Amount (micro-USDC) <span className="enc-badge" style={{ marginLeft: 4 }}>🔒</span>
-            </label>
-            <input
-              className="input"
-              type="number"
-              placeholder="1000000 = 1 USDC"
-              value={withdrawAmt}
-              onChange={e => setWithdrawAmt(e.target.value)}
-              required min="1"
-            />
-            {withdrawAmt && <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>= {(Number(withdrawAmt) / 1_000_000).toFixed(2)} USDC</p>}
-          </div>
+      {/* Mode tabs */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        {(['deposit', 'withdraw'] as const).map(m => (
           <button
-            type="submit"
-            className="btn-ghost"
-            disabled={busy || confirming || !isConnected}
-            style={{ width: '100%', justifyContent: 'center' }}
+            key={m}
+            type="button"
+            onClick={() => { setMode(m); setStatus(''); }}
+            style={{
+              padding: '6px 14px',
+              fontSize: 12,
+              borderRadius: 6,
+              cursor: 'pointer',
+              background: mode === m ? 'rgba(255,255,255,0.08)' : 'transparent',
+              border: `1px solid ${mode === m ? 'rgba(255,255,255,0.3)' : 'var(--border)'}`,
+              color: mode === m ? 'var(--text)' : 'var(--text-dim)',
+            }}
           >
-            {busy || confirming ? 'Processing…' : `Withdraw${withdrawAmt ? ` ${(Number(withdrawAmt) / 1_000_000).toFixed(2)} USDC` : ''}`}
+            {m === 'deposit' ? 'Deposit' : 'Withdraw'}
           </button>
-        </form>
+        ))}
       </div>
 
-      {/* Status */}
-      {status && (
-        <p style={{ fontSize: 11, color: status.startsWith('Error') ? '#ff6b6b' : 'var(--text-dim)', textAlign: 'center' }}>
-          {status}
-        </p>
-      )}
-      {txHash && !confirming && (
-        <a
-          href={`https://sepolia.etherscan.io/tx/${txHash}`}
-          target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', textDecoration: 'underline', display: 'block' }}
+      <form
+        onSubmit={mode === 'deposit' ? handleDeposit : handleWithdraw}
+        style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}
+      >
+        {/* Presets */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {PRESETS.map(p => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => setAmt(String(p.value))}
+              style={{
+                flex: 1,
+                padding: '6px 0',
+                fontSize: 11,
+                background: amt === String(p.value) ? 'rgba(255,255,255,0.08)' : 'transparent',
+                border: `1px solid ${amt === String(p.value) ? 'var(--border-strong)' : 'var(--border)'}`,
+                borderRadius: 6,
+                color: amt === String(p.value) ? 'var(--text)' : 'var(--text-muted)',
+                cursor: 'pointer',
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Amount input */}
+        <div>
+          <label className="label" style={{ display: 'block', marginBottom: 6 }}>
+            Amount (micro-USDC) <span className="enc-badge" style={{ marginLeft: 4 }}>🔒</span>
+          </label>
+          <input
+            className="input"
+            type="number"
+            placeholder="1000000 = 1 USDC"
+            value={amt}
+            onChange={e => setAmt(e.target.value)}
+            required min="1"
+          />
+          <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4, minHeight: 16 }}>{amt ? `= ${usdcDisplay} USDC` : ''}</p>
+        </div>
+
+        {/* Info box */}
+        <div style={{
+          padding: '12px 14px',
+          background: 'rgba(255,255,255,0.02)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: 11,
+          color: 'var(--text-dim)',
+          lineHeight: 1.7,
+          minHeight: 56,
+        }}>
+          {mode === 'deposit'
+            ? 'Transfers cUSDC from your wallet into the encrypted vault. Amount is hidden on-chain.'
+            : 'Withdraws cUSDC from the vault back to your wallet. Amount stays encrypted.'}
+        </div>
+
+        {/* Status */}
+        {status && (
+          <p style={{ fontSize: 11, color: status.startsWith('Error') ? '#ff6b6b' : 'var(--text-dim)', textAlign: 'center' }}>
+            {status}
+          </p>
+        )}
+        {txHash && !confirming && (
+          <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', textDecoration: 'underline' }}>
+            View on Etherscan ↗
+          </a>
+        )}
+
+        {/* Submit — pinned to bottom */}
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={busy || confirming || !isConnected}
+          style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}
         >
-          View on Etherscan ↗
-        </a>
-      )}
+          {busy || confirming ? 'Processing…' : mode === 'deposit'
+            ? `Deposit${usdcDisplay ? ` ${usdcDisplay} USDC` : ''}`
+            : `Withdraw${usdcDisplay ? ` ${usdcDisplay} USDC` : ''}`}
+        </button>
+      </form>
     </div>
   );
 }

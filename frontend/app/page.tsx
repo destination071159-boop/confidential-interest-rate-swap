@@ -17,8 +17,10 @@ export default function Home() {
     <div style={{ maxWidth: 1360, margin: '0 auto', padding: '32px 24px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 320px', gap: 20, alignItems: 'start' }}>
 
-        {/* Left — mint + deposit + withdraw */}
-        <CollateralSidebar />
+        {/* Left — collateral deposit/withdraw */}
+        <div style={{ position: 'sticky', top: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <CollateralSidebar />
+        </div>
 
         {/* Centre — main actions */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
@@ -44,8 +46,10 @@ export default function Home() {
           <SwapTable />
         </div>
 
-        {/* Right — account + collateral */}
-        <AccountSection />
+        {/* Right — account + collateral + mint */}
+        <div style={{ position: 'sticky', top: 32 }}>
+          <AccountSection />
+        </div>
       </div>
     </div>
   );
