@@ -105,7 +105,7 @@ export function SwaptionSection() {
     : 'unix timestamp (seconds)';
 
   return (
-    <div className="glass" style={{ padding: 28 }}>
+    <div className="glass" style={{ padding: 28, height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <p className="panel-title" style={{ marginBottom: 0 }}>Swaption</p>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -129,7 +129,7 @@ export function SwaptionSection() {
       </div>
 
       {mode === 'write' ? (
-        <form onSubmit={handleWrite} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form onSubmit={handleWrite} style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
           <div>
             <label className="label" style={{ display: 'block', marginBottom: 6 }}>Buyer Address</label>
             <input className="input" type="text" placeholder="0x…" value={buyer} onChange={e => setBuyer(e.target.value)} required />
@@ -163,12 +163,21 @@ export function SwaptionSection() {
             </div>
           </div>
 
-          <button type="submit" className="btn-primary" disabled={busy || confirming} style={{ width: '100%', justifyContent: 'center' }}>
+          {status && (
+            <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center' }}>{status}</p>
+          )}
+          {txHash && !confirming && (
+            <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', textDecoration: 'underline' }}>
+              View on Etherscan ↗
+            </a>
+          )}
+          <button type="submit" className="btn-primary" disabled={busy || confirming} style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
             {busy || confirming ? 'Processing…' : 'Write Swaption'}
           </button>
         </form>
       ) : (
-        <form onSubmit={handleExercise} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <form onSubmit={handleExercise} style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
           <div>
             <label className="label" style={{ display: 'block', marginBottom: 6 }}>Swaption ID</label>
             <input className="input" type="number" placeholder="1" value={exerciseId} onChange={e => setExerciseId(e.target.value)} required min="1" />
@@ -184,23 +193,19 @@ export function SwaptionSection() {
           }}>
             Only the buyer can exercise. If floating rate &gt; strike (inside FHE), exercising creates a live swap.
           </div>
-          <button type="submit" className="btn-primary" disabled={busy || confirming} style={{ width: '100%', justifyContent: 'center' }}>
+          {status && (
+            <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center' }}>{status}</p>
+          )}
+          {txHash && !confirming && (
+            <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', textDecoration: 'underline' }}>
+              View on Etherscan ↗
+            </a>
+          )}
+          <button type="submit" className="btn-primary" disabled={busy || confirming} style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
             {busy || confirming ? 'Processing…' : 'Exercise Swaption'}
           </button>
         </form>
-      )}
-
-      {status && (
-        <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 12, textAlign: 'center' }}>{status}</p>
-      )}
-      {txHash && !confirming && (
-        <a
-          href={`https://sepolia.etherscan.io/tx/${txHash}`}
-          target="_blank" rel="noopener noreferrer"
-          style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', marginTop: 8, textAlign: 'center', textDecoration: 'underline' }}
-        >
-          View on Etherscan ↗
-        </a>
       )}
     </div>
   );

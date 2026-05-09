@@ -72,7 +72,7 @@ export function InitiateSwapSection() {
   }
 
   return (
-    <div className="glass" style={{ padding: 28 }}>
+    <div className="glass" style={{ padding: 28, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <p className="panel-title" style={{ marginBottom: 0 }}>Initiate Swap</p>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -81,7 +81,7 @@ export function InitiateSwapSection() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
         <div>
           <label className="label" style={{ display: 'block', marginBottom: 6 }}>Counterparty Address</label>
           <input
@@ -156,7 +156,7 @@ export function InitiateSwapSection() {
           type="submit"
           className="btn-primary"
           disabled={busy || confirming}
-          style={{ width: '100%', justifyContent: 'center' }}
+          style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}
         >
           {busy || confirming ? 'Processing…' : 'Initiate Swap'}
         </button>

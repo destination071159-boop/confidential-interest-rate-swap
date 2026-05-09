@@ -65,7 +65,7 @@ export function SettleSection() {
   }
 
   return (
-    <div className="glass" style={{ padding: 28 }}>
+    <div className="glass" style={{ padding: 28, height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <p className="panel-title" style={{ marginBottom: 0 }}>Settle</p>
         <span className="enc-badge">direction encrypted</span>
@@ -85,7 +85,7 @@ export function SettleSection() {
         ))}
       </div>
 
-      <form onSubmit={handleSettle} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <form onSubmit={handleSettle} style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
         {mode === 'netted' ? (
           <div>
             <label className="label" style={{ display: 'block', marginBottom: 6 }}>
@@ -136,7 +136,7 @@ export function SettleSection() {
           type="submit"
           className="btn-primary"
           disabled={busy || confirming}
-          style={{ width: '100%', justifyContent: 'center' }}
+          style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}
         >
           {busy || confirming ? 'Processing…' : mode === 'netted' ? 'Settle Netted' : mode === 'close' ? 'Close at Maturity' : 'Settle'}
         </button>

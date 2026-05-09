@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { InfoSidebar }       from '@/components/InfoSidebar';
+import { CollateralSidebar }  from '@/components/CollateralSidebar';
 import { InitiateSwapSection } from '@/components/InitiateSwapSection';
 import { SettleSection }     from '@/components/SettleSection';
 import { SwaptionSection }   from '@/components/SwaptionSection';
 import { AccountSection }    from '@/components/AccountSection';
+import { SwapTable }         from '@/components/SwapTable';
 
 type Tab = 'swap' | 'settle' | 'swaption';
 
@@ -14,10 +15,10 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: 1360, margin: '0 auto', padding: '32px 24px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 320px', gap: 20, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 320px', gap: 20, alignItems: 'start' }}>
 
-        {/* Left — protocol info */}
-        <InfoSidebar />
+        {/* Left — mint + deposit + withdraw */}
+        <CollateralSidebar />
 
         {/* Centre — main actions */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
@@ -34,9 +35,13 @@ export default function Home() {
             </button>
           </div>
 
-          {tab === 'swap'     && <InitiateSwapSection />}
-          {tab === 'settle'   && <SettleSection />}
-          {tab === 'swaption' && <SwaptionSection />}
+          <div style={{ display: 'grid' }}>
+            <div style={{ gridArea: '1/1', visibility: tab === 'swap'     ? 'visible' : 'hidden', pointerEvents: tab === 'swap'     ? 'auto' : 'none', minWidth: 0 }}><InitiateSwapSection /></div>
+            <div style={{ gridArea: '1/1', visibility: tab === 'settle'   ? 'visible' : 'hidden', pointerEvents: tab === 'settle'   ? 'auto' : 'none', minWidth: 0 }}><SettleSection /></div>
+            <div style={{ gridArea: '1/1', visibility: tab === 'swaption' ? 'visible' : 'hidden', pointerEvents: tab === 'swaption' ? 'auto' : 'none', minWidth: 0 }}><SwaptionSection /></div>
+          </div>
+
+          <SwapTable />
         </div>
 
         {/* Right — account + collateral */}

@@ -76,7 +76,7 @@ export const PROTOCOL_ABI = [
       { name: 'party1',       type: 'address' },
       { name: 'party2',       type: 'address' },
       { name: 'maturityDate', type: 'uint256' },
-      { name: 'status',       type: 'uint8'   },
+      { name: 'status',       type: 'string'  },
     ],
   },
   {
@@ -97,10 +97,10 @@ export const PROTOCOL_ABI = [
     name: 'SwapInitiated',
     type: 'event',
     inputs: [
-      { name: 'swapId',      type: 'uint256', indexed: true  },
-      { name: 'party1',      type: 'address', indexed: true  },
-      { name: 'party2',      type: 'address', indexed: true  },
-      { name: 'maturityDate',type: 'uint256', indexed: false },
+      { name: 'swapId',   type: 'uint256', indexed: true  },
+      { name: 'party1',   type: 'address', indexed: true  },
+      { name: 'party2',   type: 'address', indexed: true  },
+      { name: 'termDays', type: 'uint256', indexed: false },
     ],
   },
 ] as const;
