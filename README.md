@@ -2,6 +2,10 @@
 
 A fully on-chain interest rate swap protocol where every sensitive financial parameter — notional amount, agreed rate, payment direction, and amount paid — is encrypted using Fully Homomorphic Encryption (FHE) via [fhEVM](https://github.com/zama-ai/fhevm) by Zama.
 
+## Demo
+
+[![Demo Video](https://img.youtube.com/vi/3KByLzLIFFg/maxresdefault.jpg)](https://youtu.be/3KByLzLIFFg?si=s8CvHpRTG6s5BOFQ)
+
 ---
 
 ## What is an Interest Rate Swap?
@@ -171,7 +175,7 @@ Browser (fhEVM SDK)
   │
   │  // enc.handles[0] = bytes32 handle for notional
   │  // enc.handles[1] = bytes32 handle for fixedRate
-  │  // enc.inputProof = shared ZK proof for both values
+  │  // enc.inputProof = shared input proof for both values
   │
   ▼
 InterestRateSwapProtocol.sol
@@ -219,6 +223,18 @@ No one else — not the relayer, not the contract, not Zama — learns your bala
 
 3. After expiry → lapseSwaption() marks it exercised with zero swap
 ```
+
+---
+
+## ERC-7984 — Confidential Token Standard
+
+The collateral token (`cUSDC`) implements [ERC-7984](https://eips.ethereum.org/EIPS/eip-7984), a confidential ERC-20 extension where balances and transfer amounts are `euint64` ciphertexts on the FHE coprocessor. This is central to how deposits work:
+
+- Instead of a standard `transfer`, the user calls `confidentialTransferAndCall(settlementEngine, encAmount, inputProof, "0x")` on the token contract.
+- The token verifies the encrypted transfer, then calls back `onConfidentialTransferReceived` on `SettlementEngine` — atomically crediting the encrypted amount to the user's vault balance.
+- At no point does any on-chain actor see a plaintext number. The vault receives, stores, and deducts a `euint64` throughout the entire lifecycle.
+
+This is what makes collateral deposits trustless and private: the settlement vault never handles a plaintext amount, and the deposit and credit happen in a single atomic callback — no intermediate state, no approval race.
 
 ---
 
