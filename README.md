@@ -73,8 +73,20 @@ InterestRateSwapProtocol.sol       ← main entry point; users interact here onl
 
 ### Contract Responsibilities
 
+#### Deployed Addresses (Sepolia)
+
+| Contract | Address |
+|---|---|
+| `InterestRateSwapProtocol` | [`0x75c03FbB00a7e20C26C79cCEd1B2E3c1641d0468`](https://sepolia.etherscan.io/address/0x75c03FbB00a7e20C26C79cCEd1B2E3c1641d0468) |
+| `SettlementEngine` | [`0x714c05E71076CCa98BCf74D7fcd9241e7dBfa174`](https://sepolia.etherscan.io/address/0x714c05E71076CCa98BCf74D7fcd9241e7dBfa174) |
+| `SwapManager` | [`0x2351fdF4E06ca29B8EC191591a96164314F91250`](https://sepolia.etherscan.io/address/0x2351fdF4E06ca29B8EC191591a96164314F91250) |
+| `SwapPool` | [`0x2E0425d5b123ac53B3066d39349d579C2CC6d227`](https://sepolia.etherscan.io/address/0x2E0425d5b123ac53B3066d39349d579C2CC6d227) |
+| `SwaptionVault` | [`0x20b9A53e183535cd5bA082335112D5D91B47DFa8`](https://sepolia.etherscan.io/address/0x20b9A53e183535cd5bA082335112D5D91B47DFa8) |
+| `RateOracle` | [`0x440B998117C981b8896B7b6a4E374159efA7322f`](https://sepolia.etherscan.io/address/0x440B998117C981b8896B7b6a4E374159efA7322f) |
+| `ConfidentialUSDC (cUSDC)` | [`0x3D3fF27d5D505DF9520f028e1253f1eE24125efe`](https://sepolia.etherscan.io/address/0x3D3fF27d5D505DF9520f028e1253f1eE24125efe) |
+
 #### `InterestRateSwapProtocol.sol`
-The single user-facing entry point. Accepts encrypted inputs, verifies ZK proofs via `FHE.fromExternal()`, and delegates to sub-contracts. Users never need to interact with sub-contracts directly.
+The single user-facing entry point. Accepts encrypted inputs, verifies input proofs via `FHE.fromExternal()`, and delegates to sub-contracts. Users never need to interact with sub-contracts directly.
 
 #### `SwapManager.sol`
 Stores each `InterestRateSwap` struct: notional (`euint64`), fixedRate (`euint64`), counterparties, startDate, endDate, lastSettlementDate, and status. Grants ACL permissions to both parties so each can decrypt their own ciphertext handles.
