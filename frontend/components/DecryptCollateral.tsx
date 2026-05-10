@@ -35,10 +35,11 @@ const BTN: React.CSSProperties = {
 
 export function DecryptCollateral({ handle }: Props) {
   const [clicked, setClicked] = useState(false);
-  const { mutateAsync: allow, isPending: isAllowing } = useAllow();
+  const [signing, setSigning] = useState(false);
+  const { mutateAsync: allow } = useAllow();
   const { data: isAllowed } = useIsAllowed({ contractAddresses: CONTRACTS });
 
-  const { data: decrypted, isPending: isDecrypting, isError, error } = useUserDecrypt(
+  const { data: decrypted, isFetching: isDecrypting, isSuccess, isError, error } = useUserDecrypt(
     { handles: [{ handle, contractAddress: SETTLEMENT_ENGINE_ADDRESS }] },
     { enabled: clicked && !!isAllowed && !!handle && handle !== NULL_HANDLE },
   );
@@ -46,7 +47,14 @@ export function DecryptCollateral({ handle }: Props) {
   const raw = decrypted?.[handle];
 
   async function handleClick() {
-    if (!isAllowed) await allow(CONTRACTS).catch(() => {});
+    setSigning(true);
+    try {
+      if (!isAllowed) await allow(CONTRACTS);
+    } catch {
+      setSigning(false);
+      return;
+    }
+    setSigning(false);
     setClicked(true);
   }
 
@@ -81,8 +89,26 @@ export function DecryptCollateral({ handle }: Props) {
     return <span style={{ ...BOX, color: '#ff4444', fontSize: 11 }} title={error?.message}>Failed</span>;
   }
 
+  if (signing) {
+    return <span style={{ ...BOX, color: 'var(--text-dim)' }}>Signing permit…</span>;
+  }
+
+  // Only show "Decrypting…" while the query is actively fetching
   if (clicked && isDecrypting) {
     return <span style={{ ...BOX, color: 'var(--text-dim)' }}>Decrypting…</span>;
+  }
+
+  // Query finished but handle not in result — FHE.allow may not have been called yet
+  if (clicked && isSuccess && raw === undefined) {
+    return (
+      <div>
+        <p style={{ fontSize: 11, color: '#ff9944', marginBottom: 8 }}>
+          No decryptable value — try depositing first or wait for the FHE gateway.
+        </p>
+        <button className="btn-outline" style={{ width: '100%', justifyContent: 'center', fontSize: 12 }}
+          onClick={() => setClicked(false)}>Retry</button>
+      </div>
+    );
   }
 
   return (
@@ -103,10 +129,10 @@ export function DecryptCollateral({ handle }: Props) {
       <button
         className="btn-outline"
         style={{ width: '100%', justifyContent: 'center', fontSize: 12 }}
-        disabled={isAllowing}
+        disabled={signing}
         onClick={handleClick}
       >
-        {isAllowing ? 'Signing permit…' : 'Decrypt Balance'}
+        {signing ? 'Signing permit…' : 'Decrypt Balance'}
       </button>
     </div>
   );
