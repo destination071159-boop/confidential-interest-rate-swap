@@ -150,15 +150,14 @@ export function SwaptionSection() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'start' }}>
             <div>
-              <label className="label" style={{ display: 'block', marginBottom: 6 }}>
-                Expiry (unix) — {expiryHint}
-              </label>
+              <label className="label" style={{ display: 'block', marginBottom: 6 }}>Expiry (Unix seconds)</label>
               <input className="input" type="number" placeholder={String(Math.floor(Date.now() / 1000) + 604800)} value={expiry} onChange={e => setExpiry(e.target.value)} required min="1" />
+              {expiry && <p style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>{new Date(Number(expiry) * 1000).toLocaleString()}</p>}
             </div>
             <div>
-              <label className="label" style={{ display: 'block', marginBottom: 6 }}>Underlying Swap Term (days)</label>
+              <label className="label" style={{ display: 'block', marginBottom: 6 }}>Swap Term (days)</label>
               <input className="input" type="number" placeholder="360" value={swapTermDays} onChange={e => setSwapTermDays(e.target.value)} required min="1" />
             </div>
           </div>
